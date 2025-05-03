@@ -8,7 +8,7 @@ rate = 10
 durations = 2		# in years
 		
 #compute the interest
-interest = principal * rate * durations
+interest = principal * (rate/100) * durations
 		
 #display the output
 print('Principal ($)  : {:.2f}'.format(principal))

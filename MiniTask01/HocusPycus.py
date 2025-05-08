@@ -1,6 +1,6 @@
 #For Qn C HocusPycus
 
-path = "C:\\Users\\Clampy\\PRG1v2\\PRG_01v2\\MiniTask01\\"
+path = "YOUR PATH TO THE FILE"
 spellfiles = open(path+'HocusPycusSpells.txt', 'r')
 spells = spellfiles.read()
 print(spells)  # Print the entire content of the file

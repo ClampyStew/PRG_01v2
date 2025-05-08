@@ -1,0 +1,6 @@
+Available Spells:
+1.Rain of Fire
+2.Ice Lance
+3.Teleport
+4.Mana Ward
+5.Arcane Missiles

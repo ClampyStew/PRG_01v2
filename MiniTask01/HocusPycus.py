@@ -4,6 +4,7 @@ path = "YOUR PATH TO THE FILE"
 spellfiles = open(path+'HocusPycusSpells.txt', 'r')
 spells = spellfiles.read()
 print(spells)  # Print the entire content of the file
+spellfiles.close()
 
 SpellCasted = str(input("Enter 5 spell numbers for activation (space-separated): "))
 #Good idea to strip the space away from input first before splitting

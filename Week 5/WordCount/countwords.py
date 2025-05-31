@@ -1,0 +1,12 @@
+mainpath = "C:\\Users\\Zhe Kai\\PRG_01v2\\Week 5\\WordCount\\"
+filename = input("Please enter the filename: ")
+datafile = open(mainpath+filename, "r")
+maindata = datafile.readline()
+maintext = maindata.split()
+datafile.close()
+textlength = len(maintext)
+print("Number of words in {}: {}".format(filename, textlength))
+outputfile = open(mainpath+"output.txt", 'w')
+outputfile.write("There are {} words in the document".format(textlength))
+outputfile.close()
+print("Number of words successfully written to output.txt")

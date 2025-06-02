@@ -4,7 +4,7 @@ attempt = 1
 
 
 #If you want to cheat
-print(correctnumber)
+#print(correctnumber)
 
 userguess = int(input("Welcome to Number Guessing Game\nTry {}: Enter a number between 1 and 100 (or -1 to end): ".format(attempt)))
 while userguess != (-1) and attempt<5:

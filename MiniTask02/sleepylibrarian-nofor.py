@@ -31,34 +31,45 @@ while True:
         duelist.append(daysoverdue)
 
 
-for x in duelist:
-    intdue = int(x)
+intduelist = []
+i = 0
+while i < len(duelist):
+    intdue = int(duelist[i])
     intduelist.append(intdue)
+    i += 1
 
-#To calculate total due, using for loops
-for x in intduelist:
-    if x < 5:
-        fines = (x*0.50)
+while position < len(duelist):
+    if float(duelist[position]) < 5:
+        fines = (float(intduelist[position])*0.50)
         finelist.append(fines)
-    elif x < 10 and x > 5:
-        fines = (x*1)
+        position += 1
+    elif float(duelist[position]) < 10:
+        fines = (float(intduelist[position])*1)
         finelist.append(fines)
-    else:
-        fines = (x*1.5)
+        position += 1
+    elif float(duelist[position]) > 10:
+        fines = (float(intduelist[position])*1.5)
         finelist.append(fines)
+        position += 1
 
-for x in finelist:
-    floatfine = float(x)
+floatfinelist = []
+x = 0
+while x < len(finelist):
+    floatfine = float(finelist[x])
     floatfinelist.append(floatfine)
+    x += 1
+
 
 total = sum(floatfinelist)
 
 print("Total books processed: {}\nOverall total fine amount: ${:.2f}".format((len(booklist)), total))
+
 finesreport = open(path+'fines_report.txt', 'w')
 
-for b in booklist:
+position = 0
+while position < len(booklist):
     if intduelist[position] > 10:
-        glare = "-.-"
+       glare = "-.-"
     else:
         glare = ""
     finesreport.write("{} {} - ${:.2f} {}\n".format(booklist[position],intduelist[position],floatfinelist[position], glare))

@@ -22,12 +22,17 @@ prices = {'copper': (1, 3), 'silver': (5, 8), 'gold': (10, 18)}
 def load_map(filename, map_struct):
     global MAP_WIDTH, MAP_HEIGHT
     with open(path+filename, 'r') as f:
-        lines = f.readlines()
+        lines = [line.rstrip('\n') for line in f if line.strip()]
     map_struct.clear()
     for line in lines:
-        map_struct.append(list(line.strip()))
-    MAP_HEIGHT = len(map_struct)
-    MAP_WIDTH = len(map_struct[0])
+        row = list(line)
+        map_struct.append(row)
+    if map_struct:
+        MAP_HEIGHT = len(map_struct)
+        MAP_WIDTH = len(map_struct[0])
+    else:
+        MAP_HEIGHT = MAP_WIDTH = 0
+
 
 # Clear fog in 3x3 area around player
 def clear_fog(fog, player):

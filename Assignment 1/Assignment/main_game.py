@@ -18,7 +18,6 @@ pickaxe_price = [50, 150]
 
 prices = {'copper': (1, 3), 'silver': (5, 8), 'gold': (10, 18)}
 
-# Load the map from file
 def load_map(filename, map_struct):
     global MAP_WIDTH, MAP_HEIGHT
     with open(path+filename, 'r') as f:
@@ -59,8 +58,8 @@ def initialize_game(game_map, fog, player):
         'day': 1,
         'steps': 0,
         'turns': TURNS_PER_DAY,
-        'max_load': 10,
-        'pickaxe': 1,
+        'max_load': 30,
+        'pickaxe': 3,
         'portal': (0, 0)
     })
     clear_fog(fog, player)
@@ -120,6 +119,7 @@ def sell_ores(player):
     if total > 0:
         print(f"You now have {player['GP']} GP!")
 
+
 def show_town_menu():
     print("\nDAY", player['day'])
     print("----- Sundrop Town -----")
@@ -132,7 +132,6 @@ def show_town_menu():
     print("------------------------")
 
 def town_loop():
-    sell_ores(player)
     while True:
         show_town_menu()
         choice = input("Your choice? ").lower()
@@ -144,6 +143,7 @@ def town_loop():
             draw_map(game_map, fog, player)
         elif choice == 'e':
             mine_loop()
+            sell_ores(player)
             break
         elif choice == 'v':
             print("Game saved. (not implemented)")
@@ -186,30 +186,40 @@ def mine_loop():
             dx = {'a': -1, 'd': 1}.get(move, 0)
             dy = {'w': -1, 's': 1}.get(move, 0)
             nx, ny = player['x'] + dx, player['y'] + dy
+
             if 0 <= nx < MAP_WIDTH and 0 <= ny < MAP_HEIGHT:
-                if game_map[ny][nx] in mineral_names:
-                    if player['copper'] + player['silver'] + player['gold'] >= player['max_load']:
-                        print("You can't carry any more, so you can't go that way.")
+                tile = game_map[ny][nx]
+
+                # If stepping on a mineral
+                if tile in mineral_names:
+                    ore_name = mineral_names[tile]
+                    ore_level_required = {'copper': 1, 'silver': 2, 'gold': 3}[ore_name]
+
+                    # Check pickaxe level
+                    if player['pickaxe'] < ore_level_required:
+                        print(f"Your pickaxe isn't strong enough to mine {ore_name} ore.")
                     else:
-                        qty = randint(*{'C': (1,5), 'S': (1,3), 'G': (1,2)}[game_map[ny][nx]])
-                        ore = mineral_names[game_map[ny][nx]]
-                        available = player['max_load'] - sum(player[m] for m in minerals)
-                        taken = min(qty, available)
-                        player[ore] += taken
-                        print(f"You mined {qty} piece(s) of {ore}. But you can only carry {taken}.")
-                        player['x'], player['y'] = nx, ny
-                        clear_fog(fog, player)
-                        player['steps'] += 1
-                        player['turns'] -= 1
-                else:
-                    player['x'], player['y'] = nx, ny
-                    clear_fog(fog, player)
-                    player['steps'] += 1
-                    player['turns'] -= 1
-                    if game_map[ny][nx] == 'T':
-                        print("You returned to town.")
-                        player['day'] += 1
-                        return
+                        total_load = player['copper'] + player['silver'] + player['gold']
+                        if total_load >= player['max_load']:
+                            print("Your backpack is full. You can't carry any more.")
+                        else:
+                            # Mine ore
+                            ore_ranges = {'copper': (1, 5), 'silver': (1, 3), 'gold': (1, 2)}
+                            qty = randint(*ore_ranges[ore_name])
+                            available = player['max_load'] - total_load
+                            mined = min(qty, available)
+                            player[ore_name] += mined
+
+                            print(f"You mined {qty} piece(s) of {ore_name}. But you can only carry {mined}.")
+                player['x'], player['y'] = nx, ny
+                player['steps'] += 1
+                player['turns'] -= 1
+                clear_fog(fog, player)
+
+                if tile == 'T':
+                    print("You returned to town.")
+                    player['day'] += 1
+                    return
             else:
                 print("You can't move there!")
                 player['turns'] -= 1
@@ -230,6 +240,8 @@ def mine_loop():
     print("You are exhausted. You place your portal stone and zap back to town.")
     player['portal'] = (player['x'], player['y'])
     player['day'] += 1
+    sell_ores(player)
+    town_loop()
 
 def show_main_menu():
     print("\n--- Main Menu ----")

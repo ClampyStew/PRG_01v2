@@ -5,6 +5,7 @@ path = 'C:\\Users\\Zhe Kai\\PRG_01v2\\Assignment 1\\Assignment\\'
 player = {}
 game_map = []
 fog = []
+pick_purchase = 0
 
 MAP_WIDTH = 0
 MAP_HEIGHT = 0
@@ -14,7 +15,6 @@ WIN_GP = 500
 
 minerals = ['copper', 'silver', 'gold']
 mineral_names = {'C': 'copper', 'S': 'silver', 'G': 'gold'}
-pickaxe_price = [50, 150]
 
 prices = {'copper': (1, 3), 'silver': (5, 8), 'gold': (10, 18)}
 
@@ -58,9 +58,10 @@ def initialize_game(game_map, fog, player):
         'day': 1,
         'steps': 0,
         'turns': TURNS_PER_DAY,
-        'max_load': 30,
-        'pickaxe': 3,
-        'portal': (0, 0)
+        'max_load': 10,
+        'pickaxe': 1,
+        'portal': (0, 0),
+        'magic_torch': False
     })
     clear_fog(fog, player)
 
@@ -155,11 +156,27 @@ def shop_menu():
     while True:
         print("\n----------------------- Shop Menu -------------------------")
         cost = player['max_load'] * 2
+        p_cost = {50, 150}
+        print(f"(P)ickaxe upgrade from level {player['pickaxe']} to {player['pickaxe']+1}, allowing you to mine more items.")
         print(f"(B)ackpack upgrade to carry {player['max_load'] + 2} items for {cost} GP")
         print("(L)eave shop")
         print("-----------------------------------------------------------")
         print(f"GP: {player['GP']}")
         choice = str(input("Your choice? "))
+        if choice.lower() == 'p':
+            if player['GP'] >= p_cost[pick_purchase] and pick_purchase == 0:
+                player['GP'] -= p_cost[pick_purchase]
+                player['pickaxe'] += 1
+                print("Congratulations! You can now mine silver!")
+                pick_purchase += 1
+            elif player['GP'] >= p_cost[pick_purchase] and pick_purchase == 1:
+                player['GP'] -= p_cost[pick_purchase]
+                player['pickaxe'] += 1
+                print("Congratulations! You have reached max upgrades for you pickaxe! You can mine all three ores now!")
+            elif pick_purchase == 2:
+                print("You cannot upgrade your pickaxe anymore!")
+            elif player['GP'] <= p_cost[pick_purchase] and pick_purchase < 2:
+                print("You cannot afford this upgrade!")
         if choice.lower() == 'b':
             if player['GP'] >= cost:
                 player['GP'] -= cost

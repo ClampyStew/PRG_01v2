@@ -51,7 +51,7 @@ def initialize_game(game_map, fog, player):
         'name': name,
         'x': 0,
         'y': 0,
-        'GP': 0,
+        'GP': 100,
         'copper': 0,
         'silver': 0,
         'gold': 0,
@@ -153,29 +153,33 @@ def town_loop():
 
 
 def shop_menu():
+    global pick_purchase
     while True:
         print("\n----------------------- Shop Menu -------------------------")
         cost = player['max_load'] * 2
-        p_cost = {50, 150}
-        print(f"(P)ickaxe upgrade from level {player['pickaxe']} to {player['pickaxe']+1}, allowing you to mine more items.")
+        p_cost = [50, 150]
+        if player['pickaxe'] < 3:
+            print(f"(P)ickaxe upgrade from level {player['pickaxe']} to {player['pickaxe']+1} for {p_cost[pick_purchase]} GP.")
         print(f"(B)ackpack upgrade to carry {player['max_load'] + 2} items for {cost} GP")
+        if not player.get('torch', False):
+            print("A magical (T)orch for 30 GP.")
         print("(L)eave shop")
         print("-----------------------------------------------------------")
         print(f"GP: {player['GP']}")
         choice = str(input("Your choice? "))
         if choice.lower() == 'p':
-            if player['GP'] >= p_cost[pick_purchase] and pick_purchase == 0:
+            if pick_purchase < 2 and player['GP'] >= p_cost[pick_purchase]:
                 player['GP'] -= p_cost[pick_purchase]
                 player['pickaxe'] += 1
-                print("Congratulations! You can now mine silver!")
+                if pick_purchase == 0:
+                    print("Congratulations! You can now mine silver!")
+                elif pick_purchase == 1:
+                    print("Congratulations! You have reached max upgrades for your pickaxe! You can mine all three ores now!")
                 pick_purchase += 1
-            elif player['GP'] >= p_cost[pick_purchase] and pick_purchase == 1:
-                player['GP'] -= p_cost[pick_purchase]
-                player['pickaxe'] += 1
-                print("Congratulations! You have reached max upgrades for you pickaxe! You can mine all three ores now!")
-            elif pick_purchase == 2:
+                time.sleep(1)
+            elif pick_purchase >= 2:
                 print("You cannot upgrade your pickaxe anymore!")
-            elif player['GP'] <= p_cost[pick_purchase] and pick_purchase < 2:
+            else:
                 print("You cannot afford this upgrade!")
         if choice.lower() == 'b':
             if player['GP'] >= cost:
@@ -186,7 +190,16 @@ def shop_menu():
             else:
                 print("Not enough GP!")
                 time.sleep(1)
-        elif choice == 'l':
+        if choice.lower() == 't' and not player.get('torch', False):
+            if player['GP'] >= 50:
+                player['GP'] -= 50
+                player['torch'] = True
+                print("You got a magical torch! Now you can see better underground...")
+                time.sleep(1)
+            else:
+                print("Sorry Link, I can't give you the torch. Come back when you're a little mmmm...richer.")
+                time.sleep(1)
+        if choice.lower() == 'l':
             break
 
 

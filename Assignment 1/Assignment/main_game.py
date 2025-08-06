@@ -1,5 +1,6 @@
 from random import randint
 import time
+import webbrowser
 
 path = 'C:\\Users\\Zhe Kai\\PRG_01v2\\Assignment 1\\Assignment\\'
 player = {}
@@ -46,12 +47,17 @@ def initialize_game(game_map, fog, player):
     for row in game_map:
         fog.append(['?' for _ in row])
     name = input("Greetings, miner! What is your name? ")
+    if name.lower() == 'internetdown':
+        webbrowser.open('https://www.youtube.com/watch?v=cQaz11b3rC8')
+        time.sleep(24) 
+    elif name.replace(" ",'').lower() == 'atomicamnesia':
+        webbrowser.open('https://www.youtube.com/watch?v=jDS_y0SisKA')
     print(f"Pleased to meet you, {name}. Welcome to Sundrop Town!")
     player.update({
         'name': name,
         'x': 0,
         'y': 0,
-        'GP': 100,
+        'GP': 0,
         'copper': 0,
         'silver': 0,
         'gold': 0,
@@ -260,8 +266,10 @@ def mine_loop():
         elif move == 'p':
             player['portal'] = (player['x'], player['y'])
             print("You place your portal stone here and zap back to town.")
+            player['portal'] = (player['x'], player['y'])
             player['day'] += 1
-            return
+            sell_ores(player)
+            town_loop()
         elif move == 'q':
             print("Returning to town...")
             player['day'] += 1

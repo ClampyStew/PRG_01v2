@@ -46,6 +46,13 @@ def load_game(game_map, fog, player):
                     section = 'player'
                 elif line == '#FOG':
                     section = 'fog'
+                    # After loading the map, make sure fog matches map shape
+                    while len(fog) < len(game_map):
+                        fog.append(['?' for _ in game_map[0]])
+                    for i in range(len(fog)):
+                        while len(fog[i]) < len(game_map[0]):
+                            fog[i].append('?')
+
                 elif line == '#MAP':
                     section = 'map'
                 elif section == 'player':
@@ -83,10 +90,16 @@ def load_map(filename, map_struct):
 def clear_fog(fog, player):
     if MAP_HEIGHT == 0 or MAP_WIDTH == 0:
         return
-    for y in range(player['y'] - 1, player['y'] + 2):
-        for x in range(player['x'] - 1, player['x'] + 2):
-            if 0 <= y < MAP_HEIGHT and 0 <= x < MAP_WIDTH:
-                fog[y][x] = game_map[y][x]
+    radius = 2 if player.get('magic_torch', False) else 1
+    for y in range(player['y'] - radius, player['y'] + radius + 1):
+        if 0 <= y < len(game_map):  # ensure y is safe
+            for x in range(player['x'] - radius, player['x'] + radius + 1):
+                if 0 <= x < len(game_map[y]):  # ensure x is safe
+                    # Extend fog row if needed
+                    while len(fog[y]) < len(game_map[y]):
+                        fog[y].append('?')
+                    fog[y][x] = game_map[y][x]
+
 
 def initialize_game(game_map, fog, player):
     load_map("level1.txt", game_map)
@@ -119,20 +132,22 @@ def initialize_game(game_map, fog, player):
     })
     clear_fog(fog, player)
 
-def draw_map(game_map, fog, player):
-    print("+" + "-" * MAP_WIDTH + "+")
-    for y in range(MAP_HEIGHT):
+def draw_view(game_map, fog, player):
+    radius = 2 if player.get('magic_torch', False) else 1
+    print("+" + "-" * (radius * 2 + 1) + "+")
+    for y in range(player['y'] - radius, player['y'] + radius + 1):
         row = "|"
-        for x in range(MAP_WIDTH):
-            if (x, y) == (player['x'], player['y']):
-                row += 'M'
-            elif (x, y) == player['portal']:
-                row += 'P'
+        for x in range(player['x'] - radius, player['x'] + radius + 1):
+            if 0 <= y < MAP_HEIGHT and 0 <= x < MAP_WIDTH:
+                if (x, y) == (player['x'], player['y']):
+                    row += 'M'
+                else:
+                    row += game_map[y][x]
             else:
-                row += fog[y][x]
+                row += '#'
         row += "|"
         print(row)
-    print("+" + "-" * MAP_WIDTH + "+")
+    print("+" + "-" * (radius * 2 + 1) + "+")
 
 def draw_view(game_map, fog, player):
     print("+---+")
@@ -195,7 +210,7 @@ def town_loop():
         elif choice == 'i':
             show_information(player)
         elif choice == 'm':
-            draw_map(game_map, fog, player)
+            draw_view(game_map, fog, player)
         elif choice == 'e':
             mine_loop()
             sell_ores(player)
@@ -217,7 +232,7 @@ def shop_menu():
         if player['pickaxe'] < 3:
             print(f"(P)ickaxe upgrade from level {player['pickaxe']} to {player['pickaxe']+1} for {p_cost[pick_purchase]} GP.")
         print(f"(B)ackpack upgrade to carry {player['max_load'] + 2} items for {cost} GP")
-        if not player.get('torch', False):
+        if not player.get('magic_torch', False):
             print("A magical (T)orch for 30 GP.")
         print("(L)eave shop")
         print("-----------------------------------------------------------")
@@ -246,10 +261,10 @@ def shop_menu():
             else:
                 print("Not enough GP!")
                 time.sleep(1)
-        if choice.lower() == 't' and not player.get('torch', False):
+        if choice.lower() == 't' and not player.get('magic_torch', False):
             if player['GP'] >= 30:
                 player['GP'] -= 30
-                player['torch'] = True
+                player['magic_torch'] = True
                 print("You got a magical torch! Now you can see better underground...")
                 time.sleep(1)
             else:
@@ -311,7 +326,7 @@ def mine_loop():
                 print("You can't move there!")
                 player['turns'] -= 1
         elif move == 'm':
-            draw_map(game_map, fog, player)
+            draw_view(game_map, fog, player)
         elif move == 'i':
             show_information(player)
         elif move == 'p':

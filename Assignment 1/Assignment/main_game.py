@@ -2,6 +2,7 @@ from random import randint
 import time
 import webbrowser
 
+#Basic global variable for use
 path = 'C:\\Users\\Zhe Kai\\PRG_01v2\\Assignment 1\\Assignment\\'
 player = {}
 game_map = []
@@ -18,6 +19,58 @@ minerals = ['copper', 'silver', 'gold']
 mineral_names = {'C': 'copper', 'S': 'silver', 'G': 'gold'}
 
 prices = {'copper': (1, 3), 'silver': (5, 8), 'gold': (10, 18)}
+
+def sync_fog_with_map(game_map, fog):
+    """Ensure fog matches the size of game_map to prevent IndexError."""
+    while len(fog) < len(game_map):
+        fog.append(['?' for _ in range(len(game_map[0]))])
+    for y in range(len(game_map)):
+        while len(fog[y]) < len(game_map[y]):
+            fog[y].append('?')
+
+def draw_map(game_map, fog, player, full=True):
+    """Draw either the full map or just the player's viewport."""
+    if not game_map:
+        print("Map not loaded.")
+        return
+
+    sync_fog_with_map(game_map, fog)
+
+    if full:
+        # Draw entire map with fog
+        print("+" + "-" * len(game_map[0]) + "+")
+        for y in range(len(game_map)):
+            row = "|"
+            for x in range(len(game_map[y])):
+                if (x, y) == (player['x'], player['y']):
+                    row += 'M'
+                elif (x, y) == player['portal']:
+                    row += 'P'
+                else:
+                    row += fog[y][x]
+            row += "|"
+            print(row)
+        print("+" + "-" * len(game_map[0]) + "+")
+    else:
+        # Draw only the viewport (radius based on torch)
+        radius = 2 if player.get('magic_torch', False) else 1
+        width = radius * 2 + 1
+        print("+" + "-" * width + "+")
+        for y in range(player['y'] - radius, player['y'] + radius + 1):
+            row = "|"
+            for x in range(player['x'] - radius, player['x'] + radius + 1):
+                if 0 <= y < len(game_map) and 0 <= x < len(game_map[0]):
+                    if (x, y) == (player['x'], player['y']):
+                        row += 'M'
+                    elif (x, y) == player['portal']:
+                        row += 'P'
+                    else:
+                        row += fog[y][x]
+                else:
+                    row += "#"
+            row += "|"
+            print(row)
+        print("+" + "-" * width + "+")
 
 def save_game(game_map, fog, player):
     try:
@@ -46,13 +99,6 @@ def load_game(game_map, fog, player):
                     section = 'player'
                 elif line == '#FOG':
                     section = 'fog'
-                    # After loading the map, make sure fog matches map shape
-                    while len(fog) < len(game_map):
-                        fog.append(['?' for _ in game_map[0]])
-                    for i in range(len(fog)):
-                        while len(fog[i]) < len(game_map[0]):
-                            fog[i].append('?')
-
                 elif line == '#MAP':
                     section = 'map'
                 elif section == 'player':
@@ -67,6 +113,8 @@ def load_game(game_map, fog, player):
         global MAP_HEIGHT, MAP_WIDTH
         MAP_HEIGHT = len(game_map)
         MAP_WIDTH = len(game_map[0]) if MAP_HEIGHT > 0 else 0
+
+        sync_fog_with_map(game_map, fog)  # 🔹 Make sure sizes match
         print("Game loaded successfully.")
     except Exception as e:
         print("Error loading game:", e)
@@ -85,21 +133,17 @@ def load_map(filename, map_struct):
     else:
         MAP_HEIGHT = MAP_WIDTH = 0
 
-
 # Clear fog in 3x3 area around player
 def clear_fog(fog, player):
-    if MAP_HEIGHT == 0 or MAP_WIDTH == 0:
+    if not game_map:
         return
+    sync_fog_with_map(game_map, fog)
     radius = 2 if player.get('magic_torch', False) else 1
     for y in range(player['y'] - radius, player['y'] + radius + 1):
-        if 0 <= y < len(game_map):  # ensure y is safe
+        if 0 <= y < len(game_map):
             for x in range(player['x'] - radius, player['x'] + radius + 1):
-                if 0 <= x < len(game_map[y]):  # ensure x is safe
-                    # Extend fog row if needed
-                    while len(fog[y]) < len(game_map[y]):
-                        fog[y].append('?')
+                if 0 <= x < len(game_map[y]):
                     fog[y][x] = game_map[y][x]
-
 
 def initialize_game(game_map, fog, player):
     load_map("level1.txt", game_map)
@@ -132,39 +176,6 @@ def initialize_game(game_map, fog, player):
     })
     clear_fog(fog, player)
 
-def draw_view(game_map, fog, player):
-    radius = 2 if player.get('magic_torch', False) else 1
-    print("+" + "-" * (radius * 2 + 1) + "+")
-    for y in range(player['y'] - radius, player['y'] + radius + 1):
-        row = "|"
-        for x in range(player['x'] - radius, player['x'] + radius + 1):
-            if 0 <= y < MAP_HEIGHT and 0 <= x < MAP_WIDTH:
-                if (x, y) == (player['x'], player['y']):
-                    row += 'M'
-                else:
-                    row += game_map[y][x]
-            else:
-                row += '#'
-        row += "|"
-        print(row)
-    print("+" + "-" * (radius * 2 + 1) + "+")
-
-def draw_view(game_map, fog, player):
-    print("+---+")
-    for y in range(player['y'] - 1, player['y'] + 2):
-        row = "|"
-        for x in range(player['x'] - 1, player['x'] + 2):
-            if 0 <= y < MAP_HEIGHT and 0 <= x < MAP_WIDTH:
-                if (x, y) == (player['x'], player['y']):
-                    row += 'M'
-                else:
-                    row += game_map[y][x]
-            else:
-                row += '#'
-        row += "|"
-        print(row)
-    print("+---+")
-
 def show_information(player):
     print("----- Player Information -----")
     print(f"Name: {player['name']}")
@@ -189,7 +200,6 @@ def sell_ores(player):
     if total > 0:
         print(f"You now have {player['GP']} GP!")
 
-
 def show_town_menu():
     print("\nDAY", player['day'])
     print("----- Sundrop Town -----")
@@ -210,18 +220,15 @@ def town_loop():
         elif choice == 'i':
             show_information(player)
         elif choice == 'm':
-            draw_view(game_map, fog, player)
+            draw_map(game_map, fog, player, full=True)
         elif choice == 'e':
-            mine_loop()
-            sell_ores(player)
-            break
+            result = mine_loop()
+            if result == "town":
+                continue  # Stay in town after mine
         elif choice == 'v':
             save_game(game_map, fog, player)
         elif choice == 'q':
-            show_main_menu()
-        elif choice == 'v':
-            save_game(game_map, fog, player)
-
+            return False
 
 def shop_menu():
     global pick_purchase
@@ -273,15 +280,16 @@ def shop_menu():
         if choice.lower() == 'l':
             break
 
-
 def mine_loop():
-    print("\n--- Entering the Mine ---")
+    print("--------------------------------------------------------")
+    print("                     DAY {}                             ".format(player['day']))
+    print("--------------------------------------------------------")
     player['turns'] = TURNS_PER_DAY
     player['x'], player['y'] = player['portal']
     while player['turns'] > 0:
         print("\nDAY", player['day'])
         clear_fog(fog, player)
-        draw_view(game_map, fog, player)
+        draw_map(game_map, fog, player, full=False)  # player view
         print(f"Turns left: {player['turns']}  Load: {player['copper'] + player['silver'] + player['gold']} / {player['max_load']}  Steps: {player['steps']}")
         move = input("(WASD) to move, (M)ap, (I)nfo, (P)ortal, (Q)uit to town: ").lower()
         if move in 'wasd':
@@ -289,65 +297,73 @@ def mine_loop():
             dy = {'w': -1, 's': 1}.get(move, 0)
             nx, ny = player['x'] + dx, player['y'] + dy
 
-            if 0 <= nx < MAP_WIDTH and 0 <= ny < MAP_HEIGHT:
-                tile = game_map[ny][nx]
+        if 0 <= nx < MAP_WIDTH and 0 <= ny < MAP_HEIGHT:
+            tile = game_map[ny][nx]
 
-                # If stepping on a mineral
-                if tile in mineral_names:
-                    ore_name = mineral_names[tile]
-                    ore_level_required = {'copper': 1, 'silver': 2, 'gold': 3}[ore_name]
+        moved = True  # assume we can move unless blocked
 
-                    # Check pickaxe level
-                    if player['pickaxe'] < ore_level_required:
-                        print(f"Your pickaxe isn't strong enough to mine {ore_name} ore.")
-                    else:
-                        total_load = player['copper'] + player['silver'] + player['gold']
-                        if total_load >= player['max_load']:
-                            print("Your backpack is full. You can't carry any more.")
-                        else:
-                            # Mine ore
-                            ore_ranges = {'copper': (1, 5), 'silver': (1, 3), 'gold': (1, 2)}
-                            qty = randint(*ore_ranges[ore_name])
-                            available = player['max_load'] - total_load
-                            mined = min(qty, available)
-                            player[ore_name] += mined
-                            print(f"You mined {qty} piece(s) of {ore_name}. But you can only carry {mined}.")
-                            game_map[ny][nx] = ' '  # remove the ore from the map
-                player['x'], player['y'] = nx, ny
-                player['steps'] += 1
-                player['turns'] -= 1
-                clear_fog(fog, player)
+        if tile in mineral_names:
+            ore_name = mineral_names[tile]
+            ore_level_required = {'copper': 1, 'silver': 2, 'gold': 3}[ore_name]
 
-                if tile == 'T':
-                    print("You returned to town.")
-                    player['day'] += 1
-                    return
+        # Check pickaxe level
+        if player['pickaxe'] < ore_level_required:
+            print(f"Your pickaxe isn't strong enough to mine {ore_name} ore.")
+            moved = False
+
+        else:
+            total_load = player['copper'] + player['silver'] + player['gold']
+            if total_load >= player['max_load']:
+                print("Your backpack is full. You can't carry any more.")
+                moved = False
             else:
-                print("You can't move there!")
-                player['turns'] -= 1
-        elif move == 'm':
-            draw_view(game_map, fog, player)
-        elif move == 'i':
+                # Mine ore
+                ore_ranges = {'copper': (1, 5), 'silver': (1, 3), 'gold': (1, 2)}
+                qty = randint(*ore_ranges[ore_name])
+                available = player['max_load'] - total_load
+                mined = min(qty, available)
+                player[ore_name] += mined
+                print(f"You mined {qty} piece(s) of {ore_name}. But you can only carry {mined}.")
+                game_map[ny][nx] = ' '  # remove the ore from the map
+
+            # Move only if allowed
+        if moved:
+            player['x'], player['y'] = nx, ny
+            player['steps'] += 1
+            player['turns'] -= 1
+            clear_fog(fog, player)
+
+        if tile == 'T':
+            print("You returned to town.")
+            player['day'] += 1
+            return
+    else:
+        print("You can't move there!")
+        player['turns'] -= 1
+
+        if move == 'm':
+            draw_map(game_map, fog, player, full=True)  # full map with fog
+        if move == 'i':
             show_information(player)
-        elif move == 'p':
+        if move == 'p':  # Portal to town
             player['portal'] = (player['x'], player['y'])
             print("------------------------------------------------------")
             print("You place your portal stone here and zap back to town.")
             player['portal'] = (player['x'], player['y'])
             player['day'] += 1
             sell_ores(player)
-            return
-        elif move == 'q':
+            return "town"
+        if move == 'q':  # Quit to town
             print("Returning to town...")
             player['day'] += 1
-            return
+            return "town"
 
-    ("-------------------------------------------------------------------------")
+    # Exhaustion
     print("You are exhausted. You place your portal stone and zap back to town.")
     player['portal'] = (player['x'], player['y'])
     player['day'] += 1
     sell_ores(player)
-    return
+    return "town"
 
 def show_main_menu():
     print("\n--- Main Menu ----")
@@ -356,41 +372,46 @@ def show_main_menu():
     print("(Q)uit")
     print("------------------")
 
-# Main Game Loop
-print("---------------- Welcome to Sundrop Caves! ----------------")
-print("You spent all your money to get the deed to a mine, a small")
-print("  backpack, a simple pickaxe and a magical portal stone.\n")
-print("How quickly can you get the 500 GP you need to retire")
-print("  and live happily ever after?")
-print("-----------------------------------------------------------")
+def main_game_loop():
+    print("---------------- Welcome to Sundrop Caves! ----------------")
+    print("You spent all your money to get the deed to a mine, a small")
+    print("  backpack, a simple pickaxe and a magical portal stone.\n")
+    print("How quickly can you get the 500 GP you need to retire")
+    print("  and live happily ever after?")
+    print("-----------------------------------------------------------")
 
-game_running = True
-while game_running:
-    show_main_menu()
-    cmd = input("Your choice? ").lower()
-    if cmd == 'n':
-        initialize_game(game_map, fog, player)
-        while True:
-            town_loop()
-            if player['GP'] >= WIN_GP:
-                print("\n-------------------------------------------------------------")
-                print(f"Woo-hoo! Well done, {player['name']}, you have {player['GP']} GP!")
-                print(f"You now have enough to retire and play video games every day.")
-                print(f"And it only took you {player['day']} days and {player['steps']} steps! You win!")
-                print("-------------------------------------------------------------")
-                break
-    
-    elif cmd == 'l':
-        load_game(game_map, fog, player)
-        while True:
-            town_loop()
-            if player['GP'] >= WIN_GP:
-                print("\n-------------------------------------------------------------")
-                print(f"Woo-hoo! Well done, {player['name']}, you have {player['GP']} GP!")
-                print(f"You now have enough to retire and play video games every day.")
-                print(f"And it only took you {player['day']} days and {player['steps']} steps! You win!")
-                print("-------------------------------------------------------------")
+    while True:
+        show_main_menu()
+        cmd = input("Your choice? ").lower()
 
-    elif cmd == 'q':
-        print("Goodbye!")
-        game_running = False
+        if cmd == 'n':
+            initialize_game(game_map, fog, player)
+            while True:
+                if not town_loop():  # returns False if player chooses (Q) in town
+                    break
+                if player['GP'] >= WIN_GP:
+                    print("\n-------------------------------------------------------------")
+                    print(f"Woo-hoo! Well done, {player['name']}, you have {player['GP']} GP!")
+                    print(f"You now have enough to retire and play video games every day.")
+                    print(f"And it only took you {player['day']} days and {player['steps']} steps! You win!")
+                    print("-------------------------------------------------------------")
+                    break
+
+        elif cmd == 'l':
+            load_game(game_map, fog, player)
+            while True:
+                if not town_loop():
+                    break
+                if player['GP'] >= WIN_GP:
+                    print("\n-------------------------------------------------------------")
+                    print(f"Woo-hoo! Well done, {player['name']}, you have {player['GP']} GP!")
+                    print(f"You now have enough to retire and play video games every day.")
+                    print(f"And it only took you {player['day']} days and {player['steps']} steps! You win!")
+                    print("-------------------------------------------------------------")
+                    break
+
+        elif cmd == 'q':
+            print("Goodbye!")
+            return  # Exit the game completely
+
+main_game_loop()

@@ -1,4 +1,4 @@
-path = "C:\\Users\\Zhe Kai\\Documents\\PRG01\\"
+path = "'[PATH]'"
 file1 = open(path+"temperature.txt", 'r')
 files = file1.readline()
 temperatures = files.split(",")

@@ -14,7 +14,7 @@ user_input = user_input.lower()
         break'''
 
 import os
-file_path = 'C:/Users/Zhe Kai/PRG_01v2/Assignment 1/Assignment/saves/gamesave.txt'
+file_path = '[PATH]'
 while True:
     if user_input == 'n':
         username = input("Greetings, miner! What is your name? ")

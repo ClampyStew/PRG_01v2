@@ -1,0 +1,4 @@
+Chocolate Bar,2.5
+Potato Chips,1.75
+Gummy Bears,3.0
+Cucumber Salad,10.0

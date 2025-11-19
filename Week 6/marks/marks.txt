@@ -1,0 +1,4 @@
+David Lim;80
+Peter Tan;90
+Asli Fan;67
+Simon Chan;77

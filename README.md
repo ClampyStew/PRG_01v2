@@ -14,4 +14,4 @@ Well, we all make mistakes. If you do spot it, please inform me immediatedly on 
 Sure, just know this is not a optimal code database for you to train with anyways lol
 
 ### What's next?
-Next up, I am planning to upload my C# codebase, stay tuned and follow [ClampyStew](github.com/ClampyStew) for future updates!
+Next up, I am planning to upload my C# codebase, stay tuned and follow [ClampyStew](https://github.com/ClampyStew) for future updates!

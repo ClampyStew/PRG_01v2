@@ -1,7 +1,7 @@
 import os
 
 def load_map(filename):
-    with open('C:\Users\Zhe Kai\PRG_01v2\Assignment 1\Assignment\level1.txt', 'r') as f:
+    with open('[PATH]', 'r') as f:
         return [list(line.rstrip('\n')) for line in f]
 
 def init_fog(rows, cols):

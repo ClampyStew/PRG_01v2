@@ -1,10 +1,10 @@
-#Created by Zhe Kai of CSF03 for PRG01 2025 Final Assignment
+
 from random import randint
 import time
 import webbrowser
 
 #Basic global variable for use
-path = 'C:\\Users\\Zhe Kai\\PRG_01v2\\Assignment 1\\Assignment\\'
+path = '[PATH]'
 player = {}
 game_map = []
 fog = []
@@ -32,6 +32,7 @@ def sync_fog_with_map(game_map, fog):
         while len(fog[y]) < len(game_map[y]):
             fog[y].append('?')
 
+#6
 def draw_map(game_map, fog, player, full=True):
     #Draw either the full map or just the player's viewport.
     if not game_map:
@@ -55,6 +56,7 @@ def draw_map(game_map, fog, player, full=True):
         print("+" + "-" * len(game_map[0]) + "+")
     else:
         # Draw only the viewport (radius based on torch)
+        # player.get('magic_torch', False) returns True if player bought the torch.
         radius = 2 if player.get('magic_torch', False) else 1
         width = radius * 2 + 1
         print("+" + "-" * width + "+")
@@ -74,6 +76,7 @@ def draw_map(game_map, fog, player, full=True):
             print(row)
         print("+" + "-" * width + "+")
 
+#8
 def save_game(game_map, fog, player):
     try:
         with open('savegame.txt', 'w') as f:
@@ -116,7 +119,7 @@ def load_game(game_map, fog, player):
         MAP_HEIGHT = len(game_map)
         MAP_WIDTH = len(game_map[0]) if MAP_HEIGHT > 0 else 0
 
-        sync_fog_with_map(game_map, fog)  # 🔹 Make sure sizes match
+        sync_fog_with_map(game_map, fog)  #Make sure sizes match
         print("Game loaded successfully.")
     except Exception as e:
         print("Error loading game:", e)
@@ -141,14 +144,16 @@ def clear_fog(fog, player):
     if not game_map:
         return
     sync_fog_with_map(game_map, fog)
+    #again, the check will return true if the player has purchased the torch.
     radius = 2 if player.get('magic_torch', False) else 1
     for y in range(player['y'] - radius, player['y'] + radius + 1):
+        #transplanting from game_map to fog, basically.
         if 0 <= y < len(game_map):
             for x in range(player['x'] - radius, player['x'] + radius + 1):
                 if 0 <= x < len(game_map[y]):
                     fog[y][x] = game_map[y][x]
 
-#user setup ang defining player stats
+#user setup and defining player stats
 def initialize_game(game_map, fog, player):
     load_map("level1.txt", game_map)
     fog.clear()
@@ -180,7 +185,7 @@ def initialize_game(game_map, fog, player):
     })
     clear_fog(fog, player)
 
-#for 'i' input
+#for 'i' input, 5
 def show_information(player):
     print("----- Player Information -----")
     print(f"Name: {player['name']}")
@@ -217,6 +222,7 @@ def show_town_menu():
     print("(Q)uit to main menu")
     print("------------------------")
 
+#3
 def town_loop():
     while True:
         show_town_menu()
@@ -236,6 +242,7 @@ def town_loop():
         elif choice == 'q':
             return False
 
+#4
 def shop_menu():
     global pick_purchase
     while True:
@@ -286,9 +293,10 @@ def shop_menu():
         if choice.lower() == 'l':
             break
 
+#7
 def mine_loop():
     print("--------------------------------------------------------")
-    print(f"                     DAY {player['day']}                             ")
+    print(f"                       DAY {player['day']}                             ")
     print("--------------------------------------------------------")
     player['turns'] = TURNS_PER_DAY
     player['x'], player['y'] = player['portal']
@@ -372,7 +380,7 @@ def mine_loop():
     sell_ores(player)
     return "town"
 
-
+#2
 def show_main_menu():
     print("\n--- Main Menu ----")
     print("(N)ew game")
@@ -380,6 +388,7 @@ def show_main_menu():
     print("(Q)uit")
     print("------------------")
 
+#1
 def main_game_loop():
     print("---------------- Welcome to Sundrop Caves! ----------------")
     print("You spent all your money to get the deed to a mine, a small")

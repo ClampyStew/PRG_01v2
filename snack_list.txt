@@ -1,0 +1,2 @@
+Chocolate Bar,2.50
+Potato Chips,1.75
